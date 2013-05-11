@@ -1,0 +1,161 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta content='yes' name='apple-mobile-web-app-capable'>
+<meta content='default' name='apple-mobile-web-app-status-bar-style'>
+<meta content='width=device-width, minimum-scale=1.0, maximum-scale=1.0'
+	name='viewport'>
+<title>Example jQuery Mobile / Full-Height Content</title>
+<script src="jQuery/jquery-2.0.0.js"></script>
+<script src="jQuery/jquery.mobile-1.3.1.js"></script>
+<script src="jquery.hammer.js"></script>
+<script src="underscore-min.js"></script>
+<script src="vexflow-min.js"></script>
+<script src="tabdiv-min.js"></script>
+<script src="space_saving_artist.js"></script>
+<link rel="stylesheet" href="jQuery/jquery.mobile-1.3.1.css" />
+
+<style>
+/* Below can be removed, does not help with Should not happen: no rect-based-test nodes found */
+window,html,body { 
+    overflow-x:hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    overflow: scroll !important;
+}
+</style>
+</head>
+<body>
+	<div data-role='page' id="idf">
+		<div class='content' data-role='content'> 
+			<img id="rect" ondragstart="return false" alt="" style="position: absolute; left: 0; top: 0;"/>
+		</div>
+		<script>
+		
+    var initialScale = 1;
+    var minimumScale = 0.3;
+    var maximumScale = 3;
+	
+    var viewport_height = $(window).height();
+    var viewport_width = $(window).width();
+    
+    var transformImage = function(image, scale) {
+    	var newWidth = image.width * scale;
+    	var newHeight = image.height * scale;
+    	
+    	var newX = (newWidth - image.width) /2;
+    	var newY = (newHeight - image.height) /2;
+    	
+		var transform ="translate3d("+newX+"px, "+newY+"px, 0) scale3d("+scale+","+scale+", 0)";
+		
+		image.style.transform = transform;
+		image.style.oTransform = transform;
+		image.style.msTransform = transform;
+		image.style.mozTransform = transform;
+		image.style.webkitTransform = transform;
+    };
+		
+	var parseAndRender = function(canvas) {
+		//clean canvas manually
+		//canvas.width = canvas.width;
+		//this one resizes canvas and cleans it - cleaning happen only if canvas is NOT position:relative
+		var renderer = new Vex.Flow.Renderer(canvas, Vex.Flow.Renderer.Backends.CANVAS);
+		var spaceSavingArtist = createSpaceSavingArtist(10, viewport_width, canvas, globalScale);
+
+		var vextab = new Vex.Flow.VexTab(spaceSavingArtist);
+
+/*		var song = "tabstave notation=true tablature=false\n";
+		song = song + "notes 4-5-6/3 $.av/bottom.$ ## | 5-4-2/3 2/2\n";
+		song = song + "tabstave notation=true tablature=false\n";
+		song = song + "notes 4-5-6/3 ## | 5-4-2/3 2/2\n";
+*/
+		var song = "tabstave notation=true tablature=false\n";
+		song = song + "notes 4-5-6/3 ## | 5-4-2/3 2/2\n";
+		song = song + "tabstave notation=true tablature=false\n";
+		song = song + "notes 4-5-6/3 ## | 5-4-2/3 2/2\n";
+
+		
+		vextab.parse(song); 
+		spaceSavingArtist.minimizeSpaceAndRender(renderer);
+	};
+
+	var showMusicSheet = function(canvas) {
+		parseAndRender(canvas);
+		var image = $("#rect").get(0);
+		transformImage(image, 1);	    
+		image.src = musicSheetCanvas.toDataURL();
+        image.height = musicSheetCanvas.height;
+        image.width = musicSheetCanvas.width;
+	};
+
+	var canvasToFullScreen = function(canvas, image) {
+        scroll(0, 0);
+
+        viewport_height = $(window).height();
+        viewport_width = $(window).width();
+
+        canvas.height = viewport_height;
+        canvas.width = viewport_width;
+    };
+
+    var musicSheetCanvas = document.createElement("canvas");
+    
+	$(window).on('orientationchange resize', function(event) {
+		var canvas = musicSheetCanvas ;
+		var image = $("#rect").get(0);
+
+		//this solution is blinking
+		window.setTimeout(function () { 
+			canvasToFullScreen(canvas, image);
+			showMusicSheet(canvas);
+			
+		}, 200);
+	});
+
+	//FIXME: test on page truning by 180 degrees
+    //FIXME: BEFORE: darken screen AFTER: show changed  
+	// turn of browser orientation handling - jqm will use fallback and fire the event consistently before change
+	$(document).bind("mobileinit", function(){
+	     $.mobile.orientationChangeEnabled = false;  
+	});
+
+	$("#idf").on('pageinit pageshow', function() {
+		var canvas = musicSheetCanvas;
+		var image = $("#rect").get(0);
+		canvasToFullScreen(canvas, image);
+		showMusicSheet(canvas);
+
+	});
+	
+	var hammertime = $("#idf").hammer({transform_min_scale: 1});
+
+	hammertime.on("tap", function(ev) {
+	});
+	
+	var globalScale = initialScale;
+	var transformScale;
+	
+	hammertime.on("transformstart", function(ev) {
+		transformScale = ev.gesture.scale;
+		console.log('transformstart ' + transformScale);
+	});
+
+	
+	hammertime.on("transform", function(ev) {
+		console.log('transform by ' + ev.gesture.scale);
+		var scale = Math.max(minimumScale, Math.min(globalScale * ev.gesture.scale, maximumScale));
+		transformScale = scale;
+
+		transformImage($("#rect").get(0), scale);
+	});
+
+	hammertime.on("transformend", function(ev) {
+		console.log('transformend globalScale ' + globalScale + ' transformScale ' + transformScale);
+		globalScale = transformScale;
+		showMusicSheet(musicSheetCanvas);
+	});
+
+      </script>
+	</div>
+</body>
+</html>

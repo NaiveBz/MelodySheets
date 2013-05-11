@@ -1,0 +1,6 @@
+start server
+  python -m SimpleHTTPServer 8888 &
+
+load url
+  http://localhost:8888/assets/www/index.html
+

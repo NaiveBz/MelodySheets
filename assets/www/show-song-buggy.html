@@ -1,0 +1,69 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>Show Song</title>
+</head>
+<body onload="onLoad();">
+
+	<div data-role="page" id="musicSheetPage">
+
+		<div data-role="header">
+			<h1>Show Song</h1>
+		</div>
+		<!-- /header -->
+
+		<div data-role="content">
+			<canvas id="musicSheet">Canvas is not available</canvas>
+		</div>
+
+		<div data-role="footer">
+			<h4>Melody Sheets</h4>
+		</div>
+
+		<!-- /content -->
+		<script type="text/javascript">
+			var fixgeometry = function() {
+				/* Some orientation changes leave the scroll position at something
+				 * that isn't 0,0. This is annoying for user experience. */
+				scroll(0, 0);
+
+				/* Calculate the geometry that our content area should take */
+				var header = $(".header:visible");
+				var footer = $(".footer:visible");
+				var content = $(".content:visible");
+				var canvas = $("musicSheet");
+				var viewport_height = $(window).height();
+
+				var content_height = viewport_height - header.outerHeight()
+						- footer.outerHeight();
+
+				/* Trim margin/border/padding height */
+				content_height -= (content.outerHeight() - content.height());
+				content.height(content_height);
+				
+				//canvas.height = content_height;
+			}; /* fixgeometry */
+			fixgeometry();
+			$("#musicSheetPage").on('pageinit', function() {
+						
+						var canvas = $("#musicSheet").get(0);
+						var sizedCanvasWidth = canvas.width;
+						var sizedCanvasHeight = canvas.height;
+
+						if (canvas) {
+							var canvasContext = canvas.getContext('2d');
+
+							if (canvasContext) {
+								canvasContext.fillStyle = "#00ff00";
+								canvasContext.fillRect(0, 0, sizedCanvasWidth,
+										sizedCanvasHeight);
+							}
+						}
+
+					});
+		</script>
+	</div>
+	<!-- /page -->
+
+</body>
+</html>

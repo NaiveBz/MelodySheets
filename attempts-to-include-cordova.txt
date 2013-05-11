@@ -1,0 +1,3 @@
+http://community.phonegap.com/nitobi/topics/crashed_after_including_cordova_2_5_0_js
+
+- bolo treba vyhodit network plugin z konfiguracie
